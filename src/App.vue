@@ -1,26 +1,64 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <div class="container">
+      <div class="row">
+        <div class="col-12">
+          <ProductView v-if="dataLoaded" :layers="layers" />
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import ProductView from "./components/ProductView.vue";
 
 export default {
-  name: 'App',
+  name: "App",
   components: {
-    HelloWorld
-  }
-}
+    ProductView,
+  },
+
+  data() {
+    return {
+      layers: [],
+      dataLoaded: false,
+    };
+  },
+
+  mounted() {
+    console.log("MOUNTED");
+    fetch(`https://lab.pikcells.com/code-exercise/data.json`)
+      .then((response) => response.json())
+      .then((response) => {
+        this.layers = response.layers;
+        console.log("response layers: ", this.layers);
+
+        // const reorderedLayers = Object.keys(this.layers)
+        //   .sort((a, b) => b - a)
+        //   .map((key) => this.layers[key]);
+
+        // this.layers = reorderedLayers;
+        // // console.log("reordered: ", this.layers);
+
+        // re-order items in the items objects into ascending order using layers.items.order value
+        for (const layer of this.layers) {
+          layer.items.sort((a, b) => a.order - b.order);
+        }
+
+        this.dataLoaded = true;
+        console.log("response layers reordered: ", this.layers);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  },
+};
 </script>
 
 <style>
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
   margin-top: 60px;
