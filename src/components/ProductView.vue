@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-if="this.isDataLoaded">
     <div class="container">
       <div class="row" style="align-items: stretch">
         <!-- View -->
@@ -13,7 +13,13 @@
               />
             </div>
           </div>
-          <button @click="downloadImage">Download Selected Images</button>
+          <button
+            v-if="this.selectedItems.length > 0"
+            @click="downloadImage"
+            class="button"
+          >
+            Download Your Room Plan!
+          </button>
         </div>
 
         <!-- Menu -->
@@ -148,6 +154,19 @@ export default {
         await this.loadImage(item);
       }
 
+      //set the first item in each order to selected true
+      const initiallySelected = {}; // keep track of encountered orders
+
+      layer.items.forEach((item) => {
+        if (!(layer.order in initiallySelected)) {
+          // If order is not currently in orderMap, set it as true (encountered)
+          initiallySelected[layer.order] = true;
+          // set selected to true for the first item of each order
+          item.selected = true;
+          this.selectedItems.push(item);
+        }
+      });
+
       // check if the last layer has been processed
       if (layer === this.layers[this.layers.length - 1]) {
         this.isDataLoaded = true;
@@ -171,7 +190,7 @@ p {
 
 img {
   border-radius: 15px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+  /* box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5); */
 }
 .item {
   padding: 5px;
@@ -180,20 +199,20 @@ img {
 }
 
 .selected-images-container {
-  position: relative; /* Set the container to relative positioning */
+  position: relative;
   margin-right: 50px;
   width: 100%;
   height: 100%;
 }
 
 .selected-image {
-  position: absolute; /* Position images absolutely within the container */
+  position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 1; /* Set a higher z-index to overlap images */
-  transition: transform 0.3s; /* Add a smooth transition effect when moving images */
+  z-index: 1;
+  transition: transform 0.3s;
 }
 
 .menu-container {
@@ -209,6 +228,17 @@ img {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
   color: white;
   font-weight: bold;
+}
+
+.button {
+  background-color: rgb(163, 162, 162);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  color: white;
+  font-weight: bold;
+  border-radius: 5px;
+  margin-top: 20px;
+  /* border: none; */
+  border-color: black;
 }
 </style>
 
