@@ -33,12 +33,11 @@
                 <span v-else>Unknown</span>
               </div>
               <div v-for="item in layer.items" :key="item.id" class="item">
-                <p
-                  @click="toggleSelection(item)"
-                  :class="{ 'selected-item': item.selected }"
-                >
-                  {{ item.name }}
-                </p>
+                <div @click="toggleSelection(item)">
+                  <p :class="{ 'selected-item': item.selected }">
+                    {{ item.name }}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -90,8 +89,9 @@ export default {
           this.$set(this.imageCache, item.imgSrc, imageURL);
           console.log("image cach: ", this.imageCache);
 
-          // add the image URL to the selected item for combining and dowloading the image later
+          // add the image URL to the item for combining and dowloading the image later
           item.imgUrl = imageURL;
+          console.log(item);
         } else {
           console.error(`Failed to fetch image for ${item.name}`);
           return null;
@@ -102,33 +102,36 @@ export default {
     },
 
     toggleSelection(item) {
-      // deselect other items with the same order (within the same section)
-      this.selectedItems = this.selectedItems.filter(
-        (i) => i.order !== item.order
-      );
+      this.layers.forEach((layer) => {
+        // check which if any layer yet contains the item
+        const layerContainsItem = layer.items.some(
+          (i) => i.imgSrc === item.imgSrc
+        );
 
-      // if the item is already selected, deselect it
-      if (item.selected) {
-        item.selected = false;
-      } else {
-        // select the clicked item and set its order
-        item.selected = true;
-        this.selectedItems.push(item);
-        item.order = this.getNewOrder(item.order);
-        console.log("SelectedItems: ", this.selectedItems);
-      }
-    },
-
-    getNewOrder(existingOrder) {
-      // determine the new order based on existing orders
-      const orders = this.selectedItems.map((item) => item.order);
-      for (let i = 0; i <= 2; i++) {
-        if (!orders.includes(i)) {
-          return i;
+        // for the layer that does contain the item, set the rest to false if the imgSrc doesnt match item.imgSrc
+        if (layerContainsItem) {
+          layer.items.forEach((i) => {
+            if (i.imgSrc !== item.imgSrc) {
+              i.selected = false;
+            }
+          });
         }
-      }
-      // if all orders are taken, set the order to the existingOrder
-      return existingOrder;
+      });
+
+      // set clicked item to selected true and reset selected items array in the correct order
+      item.selected = true;
+
+      this.selectedItems = [];
+
+      this.layers.forEach((layer) => {
+        layer.items.forEach((item) => {
+          if (item.selected) {
+            this.selectedItems.push(item);
+          }
+        });
+      });
+
+      console.log("Selected items: ", this.selectedItems);
     },
 
     async downloadImage() {
@@ -154,18 +157,19 @@ export default {
         await this.loadImage(item);
       }
 
-      // //set the first item in each order to selected true
-      // const initiallySelected = {}; // keep track of encountered orders
+      //set the first item in each order to selected true
+      const initiallySelected = {};
 
-      // layer.items.forEach((item) => {
-      //   if (!(layer.order in initiallySelected)) {
-      //     // If order is not currently in orderMap, set it as true (encountered)
-      //     initiallySelected[layer.order] = true;
-      //     // set selected to true for the first item of each order
-      //     item.selected = true;
-      //     this.selectedItems.push(item);
-      //   }
-      // });
+      layer.items.forEach((item) => {
+        if (!(layer.order in initiallySelected)) {
+          initiallySelected[layer.order] = true;
+          // set selected to true for the first item of each order
+          item.selected = true;
+          this.selectedItems.push(item);
+        }
+      });
+
+      console.log(this.selectedItems);
 
       // check if the last layer has been processed
       if (layer === this.layers[this.layers.length - 1]) {
@@ -190,7 +194,7 @@ p {
 
 img {
   border-radius: 15px;
-  /* box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5); */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
 }
 .item {
   padding: 5px;
@@ -221,6 +225,13 @@ img {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
   height: 100%;
   overflow: auto;
+}
+
+.selected-item {
+  background-color: rgb(163, 162, 162);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  color: white;
+  font-weight: bold;
 }
 
 .selected-item {
