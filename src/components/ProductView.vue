@@ -154,18 +154,18 @@ export default {
         await this.loadImage(item);
       }
 
-      //set the first item in each order to selected true
-      const initiallySelected = {}; // keep track of encountered orders
+      // //set the first item in each order to selected true
+      // const initiallySelected = {}; // keep track of encountered orders
 
-      layer.items.forEach((item) => {
-        if (!(layer.order in initiallySelected)) {
-          // If order is not currently in orderMap, set it as true (encountered)
-          initiallySelected[layer.order] = true;
-          // set selected to true for the first item of each order
-          item.selected = true;
-          this.selectedItems.push(item);
-        }
-      });
+      // layer.items.forEach((item) => {
+      //   if (!(layer.order in initiallySelected)) {
+      //     // If order is not currently in orderMap, set it as true (encountered)
+      //     initiallySelected[layer.order] = true;
+      //     // set selected to true for the first item of each order
+      //     item.selected = true;
+      //     this.selectedItems.push(item);
+      //   }
+      // });
 
       // check if the last layer has been processed
       if (layer === this.layers[this.layers.length - 1]) {
