@@ -1,6 +1,7 @@
 <template>
   <div v-if="this.isDataLoaded">
     <div class="container">
+      <h2 class="title">Pikcells Kitchen Design Service</h2>
       <div class="row" style="align-items: stretch">
         <!-- View -->
         <div class="col-9">
@@ -27,9 +28,9 @@
           <div v-if="layers && layers.length > 0">
             <div v-for="layer in this.layers" :key="layer.id">
               <div>
-                <h3 v-if="layer.order === 0">Cabinets</h3>
-                <h3 v-else-if="layer.order === 1">Floors</h3>
-                <h3 v-else-if="layer.order === 2">Walls</h3>
+                <h3 v-if="layer.order === 0" class="menu-title">Cabinets</h3>
+                <h3 v-else-if="layer.order === 1" class="menu-title">Floors</h3>
+                <h3 v-else-if="layer.order === 2" class="menu-title">Walls</h3>
                 <span v-else>Unknown</span>
               </div>
               <div v-for="item in layer.items" :key="item.id" class="item">
@@ -69,11 +70,7 @@ export default {
       try {
         console.log("Fetching image from URL:", item.imgSrc);
 
-        const url =
-          "https://corsproxy.io/?" +
-          encodeURIComponent(
-            `https://lab.pikcells.com/code-exercise/images/${item.imgSrc}`
-          );
+        const url = `http://localhost:8080/https://lab.pikcells.com/code-exercise/images/${item.imgSrc}`;
 
         const response = await fetch(url, {
           method: "GET",
@@ -135,18 +132,26 @@ export default {
     },
 
     async downloadImage() {
-      // capture a screenshot of the selected images container
-      const imageArea = document.querySelector(".selected-images-container");
-      const screenshot = await html2canvas(imageArea);
+      try {
+        await this.$nextTick();
 
-      // convert the screenshot to a data URL (image format)
-      const dataUrl = screenshot.toDataURL("image/png");
+        // screenshot the images container
+        const imageArea = document.querySelector(".selected-images-container");
+        const screenshot = await html2canvas(imageArea, {
+          useCORS: true, // if CORS issue present
+        });
 
-      // create a download link for the image
-      const a = document.createElement("a");
-      a.href = dataUrl;
-      a.download = "compiled_image.png";
-      a.click();
+        // convert the screenshot to a data URL (image format)
+        const dataUrl = screenshot.toDataURL("image/png");
+
+        // reate a download link for the image
+        const a = document.createElement("a");
+        a.href = dataUrl;
+        a.download = "compiled_image.png";
+        a.click();
+      } catch (error) {
+        console.error("Error downloading image:", error);
+      }
     },
   },
 
@@ -181,10 +186,18 @@ export default {
 </script>
 
 <style scoped>
+.title {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 20px;
+}
+
 h3 {
-  margin-bottom: 0;
   font-size: 1.55rem;
-  padding: 10px;
+  padding: 5px;
+  border-bottom: 1px solid lightgrey;
+  margin-top: 5px;
+  margin-bottom: 5px;
 }
 
 p {
@@ -194,7 +207,6 @@ p {
 
 img {
   border-radius: 15px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
 }
 .item {
   padding: 5px;
@@ -207,6 +219,8 @@ img {
   margin-right: 50px;
   width: 100%;
   height: 100%;
+  border-radius: 15px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
 }
 
 .selected-image {
@@ -225,31 +239,31 @@ img {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
   height: 100%;
   overflow: auto;
+  padding: 20px;
 }
 
 .selected-item {
-  background-color: rgb(163, 162, 162);
+  background-color: rgb(231, 231, 231);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-  color: white;
-  font-weight: bold;
-}
-
-.selected-item {
-  background-color: rgb(163, 162, 162);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-  color: white;
+  /* color: white; */
   font-weight: bold;
 }
 
 .button {
-  background-color: rgb(163, 162, 162);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  background-color: rgb(6, 204, 102);
+  margin-top: 30px;
   color: white;
   font-weight: bold;
+  border: none;
   border-radius: 5px;
-  margin-top: 20px;
-  /* border: none; */
-  border-color: black;
+  padding: 12px 20px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.button:hover {
+  background-color: rgba(6, 204, 102, 0.8);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 </style>
 
