@@ -1,7 +1,10 @@
 <template>
   <div v-if="this.isDataLoaded">
     <div class="container">
-      <h2 class="title">Pikcells Kitchen Design Service</h2>
+      <h2 class="title">Pikcells Design Portal</h2>
+      <h5 class="title">
+        Mix and match the options, lets design your dream kitchen!
+      </h5>
       <div class="row" style="align-items: stretch">
         <!-- View -->
         <div class="col-9">
@@ -14,13 +17,22 @@
               />
             </div>
           </div>
-          <button
-            v-if="this.selectedItems.length > 0"
-            @click="downloadImage"
-            class="button"
-          >
-            Download Your Room Plan!
-          </button>
+          <div>
+            <button
+              v-if="this.selectedItems.length > 0"
+              @click="downloadImage"
+              class="button"
+            >
+              Download Your Design!
+            </button>
+            <button
+              v-if="this.selectedItems.length > 0"
+              @click="saveImage"
+              class="button"
+            >
+              Save
+            </button>
+          </div>
         </div>
 
         <!-- Menu -->
@@ -46,13 +58,23 @@
         </div>
       </div>
     </div>
+    <div class="saved-images">
+      <SavedDesigns
+        :savedImages="this.savedImages"
+        @delete-image="deleteImage"
+      />
+    </div>
   </div>
 </template>
 
 <script>
 import html2canvas from "html2canvas";
+import SavedDesigns from "./SavedDesigns.vue";
 
 export default {
+  components: {
+    SavedDesigns,
+  },
   props: {
     layers: Array,
   },
@@ -62,6 +84,7 @@ export default {
       imageCache: [],
       selectedItems: [],
       isDataLoaded: false,
+      savedImages: [],
     };
   },
 
@@ -98,7 +121,7 @@ export default {
       }
     },
 
-    toggleSelection(item) {
+    async toggleSelection(item) {
       this.layers.forEach((layer) => {
         // check which if any layer yet contains the item
         const layerContainsItem = layer.items.some(
@@ -144,7 +167,7 @@ export default {
         // convert the screenshot to a data URL (image format)
         const dataUrl = screenshot.toDataURL("image/png");
 
-        // reate a download link for the image
+        // create a download link for the image
         const a = document.createElement("a");
         a.href = dataUrl;
         a.download = "compiled_image.png";
@@ -152,6 +175,35 @@ export default {
       } catch (error) {
         console.error("Error downloading image:", error);
       }
+    },
+
+    async saveImage() {
+      try {
+        await this.$nextTick();
+
+        // screenshot the images container
+        const imageArea = document.querySelector(".selected-images-container");
+        const screenshot = await html2canvas(imageArea, {
+          useCORS: true, // if CORS issue present
+        });
+
+        // convert the screenshot to a data URL (image format)
+        const dataUrl = screenshot.toDataURL("image/png");
+
+        const savedImage = {
+          image: dataUrl,
+          items: [...this.selectedItems],
+        };
+
+        this.savedImages.push(savedImage);
+        console.log("savedImages: ", this.savedImages);
+      } catch (error) {
+        console.error("Error saving image:", error);
+      }
+    },
+
+    deleteImage(index) {
+      this.savedImages.splice(index, 1);
     },
   },
 
@@ -174,7 +226,7 @@ export default {
         }
       });
 
-      console.log(this.selectedItems);
+      console.log("selectedItems on render: ", this.selectedItems);
 
       // check if the last layer has been processed
       if (layer === this.layers[this.layers.length - 1]) {
@@ -187,6 +239,12 @@ export default {
 
 <style scoped>
 .title {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 10px;
+}
+
+.sub-title {
   display: flex;
   justify-content: flex-start;
   margin-bottom: 20px;
@@ -252,6 +310,7 @@ img {
 .button {
   background-color: rgb(6, 204, 102);
   margin-top: 30px;
+  margin-right: 20px;
   color: white;
   font-weight: bold;
   border: none;
@@ -264,6 +323,10 @@ img {
 .button:hover {
   background-color: rgba(6, 204, 102, 0.8);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.saved-images {
+  margin-top: 120px;
 }
 </style>
 

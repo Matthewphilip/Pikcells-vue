@@ -27,21 +27,13 @@ export default {
   },
 
   mounted() {
-    console.log("MOUNTED");
     fetch(`https://lab.pikcells.com/code-exercise/data.json`)
       .then((response) => response.json())
       .then((response) => {
         this.layers = response.layers;
         console.log("response layers: ", this.layers);
 
-        // const reorderedLayers = Object.keys(this.layers)
-        //   .sort((a, b) => b - a)
-        //   .map((key) => this.layers[key]);
-
-        // this.layers = reorderedLayers;
-        // // console.log("reordered: ", this.layers);
-
-        // re-order items in the items objects into ascending order using layers.items.order value
+        // order items in the items objects into ascending order using layers.items.order value
         for (const layer of this.layers) {
           layer.items.sort((a, b) => a.order - b.order);
         }
